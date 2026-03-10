@@ -16,8 +16,9 @@ A production-quality Streamlit app for mortgage brokers and borrowers to:
 Timing note
 -----------
 All payment-period numbers (month numbers) refer to *monthly* mortgage payment
-periods.  If a user says "week 10" or "week 19," those map to payment month 10
-and 19 respectively, unless an explicit biweekly schedule is enabled.
+periods.  Some users (particularly those with biweekly payment habits) may
+refer to "week 10" or "week 19" when they actually mean payment period 10 or 19.
+This app treats all period numbers as monthly payment numbers.
 This assumption is noted in the UI and in relevant function docstrings.
 
 Run with:  streamlit run app.py
@@ -697,7 +698,7 @@ def compare_scenarios(
     )
 
     # Break-even estimate: months until cumulative savings cover closing costs
-    breakeven_month: Any = "N/A"
+    breakeven_month: int | str = "N/A"
     if closing_costs > 0:
         monthly_saving_estimate = (
             interest_diff / summary_refi["Actual_Payoff_Month"]
@@ -997,7 +998,7 @@ def render_strategy_ui(
                     help=(
                         "Payment month number when you begin making extra payments. "
                         "Month 1 = first payment period. "
-                        "💡 'Week 19' = payment month 19."
+                        "Example: enter 19 to start extra payments on the 19th monthly payment."
                     ),
                 )
             )
@@ -1026,7 +1027,8 @@ def render_strategy_ui(
         st.caption(
             "Enter one-time extra payments as: `month:amount, month:amount`\n\n"
             "Example: `10:1000, 20:1500, 36:5000`\n\n"
-            "💡 'Week 10' = payment month 10.  Accepted separators: `:` `=` or space."
+            "Month numbers are monthly payment periods (period 10 = 10th monthly payment).  "
+            "Accepted separators: `:` `=` or space."
         )
         lump_text = st.text_area(
             "Lump sum events",
@@ -1874,8 +1876,7 @@ def main() -> None:
     st.markdown("---")
     st.caption(
         "⚠️ **Assumptions & Disclaimers:**\n\n"
-        "- All month numbers are monthly mortgage payment periods (not calendar weeks)\n"
-        "- 'Week 10' or 'week 19' are treated as payment month 10 or 19 respectively\n"
+        "- All month numbers are monthly mortgage payment periods (month 1 = first payment, month 19 = 19th payment)\n"
         "- Extra payments are capped so the balance never drops below zero\n"
         "- Target payment mode targets P&I only unless 'includes escrow' is checked\n"
         "- PMI is removed automatically when LTV ≤ 80 %\n"
